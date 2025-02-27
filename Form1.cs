@@ -1,78 +1,109 @@
-namespace practica05
+﻿using Microsoft.VisualBasic.ApplicationServices;
+
+namespace renta_de_peliculas
 {
     public partial class Form1 : Form
     {
-
+        // Diccionario con los precios base y porcentaje de multa por género
+        private Dictionary<string, (double precio, double multa)> tarifas = new Dictionary<string, (double, double)>
+        {
+            {"Acción", (50, 0.10)},
+            {"Comedia", (40, 0.08)},
+            {"Drama", (45, 0.07)},
+            {"Terror", (55, 0.12)},
+            {"Ciencia Ficción", (60, 0.15)}
+        };
         public Form1()
-
         {
             InitializeComponent();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
+            cmbGenero.Items.AddRange(new string[] { "Acción", "Comedia", "Drama", "Terror", "Ciencia Ficción" });
+        }
 
-            // Obtener las calificaciones ingresadas
-            double Parcial1 = Convert.ToDouble(txtParcial1.Text);
-            double Parcial2 = Convert.ToDouble(txtParcial2.Text);
-            double Parcial3 = Convert.ToDouble(txtParcial3.Text);
-            double Promedio = (Parcial1 + Parcial2 + Parcial3) / 3;
+        private void cmbGenero_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Configurar el Timer
+            timer1.Interval = 1000; // Actualiza cada segundo
+            timer1.Tick += new EventHandler(ActualizarHora);
+            timer1.Start();
+        }
+        private void ActualizarHora(object sender, EventArgs e)
+        {
+            lblHora.Text = DateTime.Now.ToString("HH:mm:ss"); // Formato 24 horas
+        }
 
-            // Determinar el estatus del alumno
-            string Estatus;
-            if (Promedio >= 95)
+        private void btnCalcular_Click(object sender, EventArgs e)
+        {
+            if (cmbGenero.SelectedItem == null)
             {
-                Estatus = "Exento";
+                MessageBox.Show("Por favor, selecciona un género y/o ingresa un número válido de días.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            else if (Promedio >= 70)
+            // 2️⃣ Validar que el usuario haya ingresado un número válido de días
+            if (!int.TryParse(txtDiasRetardo.Text, out int dias) || dias < 0)
             {
-                Estatus = "Ordinario";
+                MessageBox.Show("Por favor, ingresa un número válido de días (mayor o igual a 0).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            else if (Promedio >= 50)
+            // 3️⃣ Obtener el género seleccionado
+            string Genero = cmbGenero.SelectedItem.ToString() ?? "";
+            // 4️⃣ Verificar que el género existe en el diccionario
+            if (!tarifas.ContainsKey(Genero))
             {
-                Estatus = "Extraordinario";
+                MessageBox.Show("El género seleccionado no es válido.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
-            else
-            {
-                Estatus = "Especial";
-            }
-            int vIndice = dataGridView1.Rows.Add();
-            dataGridView1.Rows[vIndice].Cells[0].Value = txtNombre.Text;
-            dataGridView1.Rows[vIndice].Cells[1].Value = txtParcial1.Text;
-            dataGridView1.Rows[vIndice].Cells[2].Value = txtParcial2.Text;
-            dataGridView1.Rows[vIndice].Cells[3].Value = txtParcial3.Text;
-            dataGridView1.Rows[vIndice].Cells[4].Value = Promedio;
-            dataGridView1.Rows[vIndice].Cells[5].Value = Estatus;
+            // 5️⃣ Obtener los valores del diccionario
+            double precioBase = tarifas[Genero].precio;
+            double multaPorDia = tarifas[Genero].multa;
 
-            txtNombre.Text = "";
-            txtParcial1.Text = "";
-            txtParcial2.Text = "";
-            txtParcial3.Text = "";
+            // 6️⃣ Calcular la multa y el total a pagar
+            double multaTotal = (dias > 0) ? (dias * precioBase * multaPorDia) : 0;
+            double total = precioBase + multaTotal;
+
+            // 7️⃣ Agregar los datos a la tabla DataGridView (dgvDetalles)
+            dgvDetalles.Rows.Add(Genero, precioBase.ToString("C"), multaTotal.ToString("C"), total.ToString("C"));
+
+            // 8️⃣ Mostrar el total en txtTotal
+            txtTotal.Text = total.ToString("C");
+
+            // 9️⃣ Mostrar la imagen correspondiente al género
+
+
+
+
+
+
+
         }
 
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+
+
+
+
+
+
+        private void pbImagen_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void dataGridView1_MouseClick(object sender, MouseEventArgs e)
+        private void dgvDetalles_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
-        }
-
-        private void txtNombre_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void dataGridView1_MouseClick_1(object sender, MouseEventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-            
         }
     }
 }
+                        
+
+
+
+
+
+
+
+
+
